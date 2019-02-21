@@ -5,19 +5,39 @@ Five categories are created and some Properties are created
 in each category.
 This script should only be run on an empty database.
 """
+
+# Import Dependencies from sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+# Import the following classes from the file
 from database_setup import Base, Project, Property, User
 
+# To know to which database we need to comunicate with
 engine = create_engine('sqlite:///propertieswithusers.db')
+
+# Make connections with class definitions with its tables in database itself
 Base.metadata.bind = engine
+
+# sessionmaker object
+# To establish a link of communication b/w code executions and 
+# engine we just created
 DBSession = sessionmaker(bind=engine)
+
+# sqlalchemy does operations on db via an interface called session
+# Operation doesn't finish until commit
+# session is Instance of DBSession
 session = DBSession()
 
 # Create dummy user
+# Making a new entry into db is like making a new object in python
 User1 = User(name="Robo Barista", email="tinnyTim@udacity.com",
              picture='https://goo.gl/VzhNft')
+
+# User1 will be added to the stagingzone
 session.add(User1)
+
+# User1 will be stored in the db
 session.commit()
 
 # Residential Properties under various Projects
