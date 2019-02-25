@@ -38,15 +38,23 @@
                   <!-- GOOGLE PLUS SIGN IN BUTTON-->
                   <div id="signinButton">
                   <span class="g-signin"
+                    <!-- What google resourses we want to access (name,email,prof pic)-->
                     data-scope="openid email"
+                    <!-- Client id geneated-->
                     data-clientid="62811728238-pmr0cnqd7vs3ev5sddve7r60sheij9r1.apps.googleusercontent.com"
+                    <!-- Enables 1 time use code flow-->
                     data-redirecturi="postmessage"
-                    data-accesstype="offline"
+                    <!-- Our server can request Google API server even user not logedin-->
+                    data-accesstype="offline"                    
                     data-cookiepolicy="single_host_origin"
+                    <!-- Callback method when user accepts app to access their profile-->
+                    <!-- When its called its given with 1 time code and access code-->
                     data-callback="signInCallback"
+                    <!-- User has to login each time when visits login page-->
                     data-approvalprompt="force">
                   </span>
                 </div>
+                <!-- Result will be showed on to web page if no response from call back to server -->
                 <div id="result"></div>
                 </div>
             </div>        
@@ -58,6 +66,9 @@
              </div>
              <div class="card-body">
               <div class="mb-4">
+              <!--Use FB SDK to create login button-->
+              <!--button specified scope of authorization our app wants to request-->
+              <!--Invoke sendTokenToServer() method on login-->
               <fb:login-button scope="public_profile,email" onlogin="sendTokenToServer();">
               <a href='javascript:sendTokenToServer()'>Facebook</a>
               </fb:login-button>
@@ -76,21 +87,29 @@
   </div>
 
 <script>
+//Takes the Auth result object from google
 function signInCallback(authResult) {
+  // One time code is present if Authorization with Google server API is success
   if (authResult['code']) {
 
     // Hide the sign-in button now that the user is authorized
     $('#signinButton').attr('style', 'display: none');
 
-    // Send the one-time-use code to the server, if the server responds, write a 'login successful' message to the web page and then redirect back to the main projects page
+    // Send the one-time-use code (given by google to client) to the server, if the server responds,
+    // write a 'login successful' message to the web page and 
+    // then redirect back to the main projects page
     $.ajax({
       type: 'POST',
-      url: '/gconnect?state={{STATE}}',
+      // send state token to verify cross site reference forgery attack as argument
+      // state is recieved from server to this template
+      url: '/gconnect?state={{STATE}}',   
       processData: false,
+      // Data we are going to send the server
       data: authResult['code'],
       contentType: 'application/octet-stream; charset=utf-8',
       success: function(result) {
         // Handle or verify the server response if necessary.
+        // Return to project page after 4 seconds
         if (result) {
           $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
          setTimeout(function() {
@@ -139,11 +158,14 @@ function signInCallback(authResult) {
   // Here we run a very simple test of the Graph API after login is
   // successful.  See statusChangeCallback() for when this call is made.
   function sendTokenToServer() {
+    // Retrieve the short lived access token
     var access_token = FB.getAuthResponse()['accessToken'];
     console.log(access_token)
     console.log('Welcome!  Fetching your information.... ');
+    // Using SDK to make API calls
     FB.api('/me', function(response) {
       console.log('Successful login for: ' + response.name);
+     // Send Access Token to myServer via Ajax Calls
      $.ajax({
       type: 'POST',
       url: '/fbconnect?state={{STATE}}',
